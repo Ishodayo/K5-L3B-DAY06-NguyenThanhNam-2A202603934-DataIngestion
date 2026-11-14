@@ -1,0 +1,60 @@
+{
+  "run_at": "2026-11-14T04:14:27+00:00",
+  "pypdf": "7.1.0",
+  "pages_loaded": 203,
+  "timings": {
+    "load_and_normalize_s": 6.95,
+    "chunk_A_s": 0.05,
+    "chunk_B_s": 0.034
+  },
+  "strategies": {
+    "A": {
+      "count": 929,
+      "min": 51,
+      "max": 500,
+      "mean": 447.9,
+      "median": 500,
+      "p10": 233,
+      "p90": 500,
+      "total_chars": 416093,
+      "config": {
+        "chunking": "fixed_size",
+        "params": {
+          "size": 500,
+          "overlap": 50
+        },
+        "filter": false
+      },
+      "pages_covered": 203
+    },
+    "B": {
+      "count": 528,
+      "min": 54,
+      "max": 1200,
+      "mean": 719.2,
+      "median": 749.0,
+      "p10": 245,
+      "p90": 1140,
+      "total_chars": 379717,
+      "config": {
+        "chunking": "by_paragraph",
+        "params": {
+          "max_size": 1200
+        },
+        "filter": false
+      },
+      "pages_covered": 203,
+      "chunks_with_section": 528
+    },
+    "C": {
+      "config": {
+        "chunking": "by_paragraph",
+        "params": {
+          "max_size": 1200
+        },
+        "filter": true
+      },
+      "note": "reuses strategy B chunks"
+    }
+  }
+}
