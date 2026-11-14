@@ -264,7 +264,7 @@
         243,
         244
       ],
-      "counted_chars_total": 376228,
+      "counted_chars_total": 380592,
       "page_id_format": "thinkpython2:p{pdf_page:03d}",
       "page_numbering": "gold_page dùng số trang PDF (1-based); số trang in = trang PDF - 22",
       "chapters": {
@@ -588,6 +588,6 @@
     "chapter_id": "str – ch01..ch19, appendix_A, appendix_B (từ outline PDF) – trường filter",
     "chapter_title": "str – tên chương từ outline PDF"
   },
-  "extraction_tool": "pypdf 6.21.4",
-  "generated_at": "2026-11-14T03:26:38+00:00"
+  "extraction_tool": "pypdf 7.1.0",
+  "generated_at": "2026-11-14T03:45:58+00:00"
 }
