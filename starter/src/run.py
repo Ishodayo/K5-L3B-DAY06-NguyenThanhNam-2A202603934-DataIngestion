@@ -6,7 +6,11 @@ Run from the starter/ folder:
     .venv\\Scripts\\python -m src.run ingest                # GĐ4: embed + upsert A, B, C into pgvector
     .venv\\Scripts\\python -m src.run ingest --force-reembed   # re-embed all chunks to measure full time
     .venv\\Scripts\\python -m src.run search "QUERY" [--chapter ch05]   # GĐ4: top-3 from all three indexes
-Stage eval is added in GĐ5.
+    .venv\\Scripts\\python -m src.run eval --split dev      # GĐ5: top-3 traces + Hit@1/Hit@3 on dev
+    .venv\\Scripts\\python -m src.run select                # GĐ5: choose strategy from DEV with pre-registered rule
+    .venv\\Scripts\\python -m src.run eval --split test     # GĐ5: run test ONCE (needs selection.json)
+    .venv\\Scripts\\python -m src.run audit                 # GĐ5: create manual audit sheets in results/audit/
+    .venv\\Scripts\\python -m src.run audit --summary       # GĐ5: aggregate the labels filled by the grader
 """
 from __future__ import annotations
 
@@ -26,6 +30,7 @@ from dotenv import load_dotenv
 
 from .chunking import chunk_pages
 from .embeddings import DEFAULT_MODEL, MyEmbedder
+from .evaluation import evaluate_query, summarize
 from .ingestion import load_corpus
 from .models import Chunk
 from .store import PgVectorStore
@@ -223,6 +228,154 @@ def cmd_search(args: argparse.Namespace) -> int:
     return 0
 
 
+def _load_questions() -> list[dict]:
+    path = REPO / "benchmark" / "questions.jsonl"
+    return [json.loads(l) for l in path.read_text(encoding="utf-8").splitlines() if l.strip()]
+
+
+def _read_traces(name: str) -> list[dict]:
+    path = RESULTS / f"traces_{name}.jsonl"
+    if not path.exists():
+        return []
+    return [json.loads(l) for l in path.read_text(encoding="utf-8").splitlines() if l.strip()]
+
+
+def _write_metrics() -> dict:
+    traces = [t for s in STRATEGIES for t in _read_traces(s)]
+    summary = summarize(traces)
+    cols = ["strategy", "split", "hit1", "N", "hit3", "page_hit3", "filter_compliant", "filter_N",
+            "nonfilter_hit3", "nonfilter_N"]
+    lines = [",".join(cols + ["hit1_str", "hit3_str"])]
+    for s in summary.values():
+        lines.append(",".join([str(s[c]) for c in cols] + [f"{s['hit1']}/{s['N']}", f"{s['hit3']}/{s['N']}"]))
+    (RESULTS / "metrics.csv").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return summary
+
+
+def cmd_eval(args: argparse.Namespace) -> int:
+    split = args.split
+    selection_path = RESULTS / "selection.json"
+    if split == "test":
+        if not selection_path.exists():
+            raise SystemExit("Chưa có results/selection.json: chạy 'eval --split dev' rồi 'select' trước khi chạy test.")
+        sel = json.loads(selection_path.read_text(encoding="utf-8"))
+        if sel.get("test_runs") and not args.allow_rerun:
+            raise SystemExit("Test đã chạy rồi (test chỉ chạy một lần). Dùng --allow-rerun nếu buộc phải chạy lại "
+                             "và ghi lý do vào báo cáo.")
+    db_url, model_name = _env()
+    embedder = MyEmbedder(model_name)
+    store = PgVectorStore(db_url, embedder.dimensions)
+    questions = [q for q in _load_questions() if q["split"] == split]
+    run_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    t0 = time.perf_counter()
+    qvecs = {q["id"]: embedder.embed_query(q["question"]) for q in questions}  # same query vector for A/B/C
+    for name, cfg in STRATEGIES.items():
+        traces = [t for t in _read_traces(name) if t["split"] != split]  # replace this split only
+        for q in questions:
+            applied = q["filter"] if (cfg["filter"] and q.get("filter")) else None
+            hits = store.search(name, qvecs[q["id"]], top_k=3, filters=applied)
+            rec = evaluate_query(q, hits, applied)
+            rec.update({"strategy": name, "run_at": run_at, "embedding_model": embedder.model_name})
+            traces.append(rec)
+        traces.sort(key=lambda t: (t["split"], t["id"]))
+        with open(RESULTS / f"traces_{name}.jsonl", "w", encoding="utf-8") as f:
+            for t in traces:
+                f.write(json.dumps(t, ensure_ascii=False) + "\n")
+    elapsed = round(time.perf_counter() - t0, 2)
+    summary = _write_metrics()
+    if split == "test":
+        sel = json.loads(selection_path.read_text(encoding="utf-8"))
+        sel.setdefault("test_runs", []).append(run_at)
+        selection_path.write_text(json.dumps(sel, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    print(f"Split: {split} | {len(questions)} câu | model {embedder.model_name} | {elapsed} s")
+    print(f"{'Strategy':<9}{'Hit@1':>8}{'Hit@3':>8}{'PageHit@3':>11}{'Filter ok':>11}")
+    for name in STRATEGIES:
+        s = summary[f"{name}|{split}"]
+        filt = f"{s['filter_compliant']}/{s['filter_N']}" if s["filter_N"] else "N/A"
+        print(f"{name:<9}{s['hit1']:>4}/{s['N']:<3}{s['hit3']:>4}/{s['N']:<3}{s['page_hit3']:>7}/{s['N']:<3}{filt:>11}")
+    for name in STRATEGIES:
+        miss = [t["id"] for t in _read_traces(name) if t["split"] == split and not t["evidence_hit_at_3"]]
+        print(f"  {name} trượt Hit@3: {miss}")
+    print(f"Đã ghi: results\\traces_A/B/C.jsonl, results\\metrics.csv")
+    return 0
+
+
+def cmd_select(args: argparse.Namespace) -> int:
+    """Apply the selection rule pre-registered in benchmark/README.md, using DEV results only."""
+    summary = _write_metrics()
+    dev = {name: summary.get(f"{name}|dev") for name in STRATEGIES}
+    if any(v is None for v in dev.values()):
+        raise SystemExit("Thiếu kết quả dev: chạy 'eval --split dev' trước.")
+    chunks = {"A": 929, "B": 528, "C": 528}
+    try:
+        stats = json.loads((RESULTS / "chunk_stats.json").read_text(encoding="utf-8"))
+        chunks = {"A": stats["strategies"]["A"]["count"], "B": stats["strategies"]["B"]["count"],
+                  "C": stats["strategies"]["B"]["count"]}
+    except Exception:  # noqa: BLE001
+        pass
+    log = []
+    best3 = max(v["hit3"] for v in dev.values())
+    cands = [n for n, v in dev.items() if v["hit3"] >= best3 - 1]
+    log.append(f"1) Hit@3 dev: {{{', '.join(f'{n}: {v['hit3']}/{v['N']}' for n, v in dev.items())}}}; "
+               f"max={best3}; ứng viên (chênh <= 1 câu): {cands}")
+    best1 = max(dev[n]["hit1"] for n in cands)
+    cands2 = [n for n in cands if dev[n]["hit1"] == best1]
+    log.append(f"2) Hit@1 dev trong ứng viên: {{{', '.join(f'{n}: {dev[n]['hit1']}' for n in cands)}}}; "
+               f"còn lại: {cands2}")
+    # 3) tie-break: fewer chunks first, then no filter before filter (simpler)
+    order = sorted(cands2, key=lambda n: (chunks[n], STRATEGIES[n]["filter"], n))
+    winner = order[0]
+    log.append(f"3) Hòa thì ưu tiên ít chunk / không filter: thứ tự {order} -> {winner}")
+    if winner in ("B", "C"):
+        b, c = dev["B"], dev["C"]
+        rule4 = c["nonfilter_hit3"] >= b["nonfilter_hit3"] and c["filter_compliant"] == c["filter_N"] > 0
+        log.append(f"4) B vs C: C non-filter Hit@3 {c['nonfilter_hit3']}/{c['nonfilter_N']} vs "
+                   f"B {b['nonfilter_hit3']}/{b['nonfilter_N']}; C tuân thủ filter {c['filter_compliant']}/"
+                   f"{c['filter_N']} -> {'chọn C' if rule4 else 'giữ ' + winner}")
+        if rule4:
+            winner = "C"
+    sel = {"selected_strategy": winner, "decided_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+           "based_on": "dev only (benchmark/README.md, 'Tiêu chí chọn chiến lược')", "steps": log,
+           "dev_summary": dev}
+    path = RESULTS / "selection.json"
+    if path.exists():
+        old = json.loads(path.read_text(encoding="utf-8"))
+        if old.get("test_runs"):
+            raise SystemExit("Đã chạy test sau lần chọn trước; không chọn lại để tránh dùng test để tinh chỉnh.")
+    path.write_text(json.dumps(sel, ensure_ascii=False, indent=2), encoding="utf-8")
+    print("\n".join(log))
+    print(f"==> Chiến lược được chọn (từ dev): {winner}. Đã ghi results\\selection.json")
+    return 0
+
+
+def cmd_audit(args: argparse.Namespace) -> int:
+    from .audit import make_sheets, summarize_sheets
+
+    if args.summary:
+        summary = summarize_sheets(RESULTS)
+        (RESULTS / "audit" / "audit_summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2),
+                                                             encoding="utf-8")
+        for s, v in summary.items():
+            c, m, g = v["coherence"], v["metadata"], v["grounding"]
+            print(f"{s}: coherence {c['mean_of_2']}/2 ({c['labelled']}/{c['N']} đã chấm) | "
+                  f"metadata đủ&đúng {m['complete_and_correct']}/{m['N']} ({m['confirmed']} đã xác nhận; "
+                  f"auto {m['auto_all_ok']}/{m['N']}) | filter {m['filter_compliant_questions']}/{m['filter_questions']} | "
+                  f"grounding 0/1/2 = {g['count_0']}/{g['count_1']}/{g['count_2']}, TB {g['mean_of_2']}/2 "
+                  f"({g['labelled']}/{g['N']} đã chấm)")
+        print("Đã ghi results\\audit\\audit_summary.json")
+        return 0
+    if (RESULTS / "audit" / "coherence.csv").exists() and not args.overwrite:
+        raise SystemExit("results\\audit\\ đã có bảng chấm; dùng --overwrite nếu muốn tạo lại (sẽ mất nhãn đã điền).")
+    pages, _, _ = load_corpus(REPO)
+    chunks = {n: chunk_pages(pages, n, **STRATEGIES[n]["params"]) for n in ("A", "B")}
+    counts = make_sheets(REPO, RESULTS, chunks)
+    print(f"Đã tạo results\\audit\\coherence.csv ({counts['coherence_rows']} dòng), metadata.csv "
+          f"({counts['metadata_rows']} dòng), grounding.csv ({counts['grounding_rows']} dòng). "
+          f"Điền cột score/confirmed rồi chạy 'audit --summary'.")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m src.run")
     sub = parser.add_subparsers(dest="stage", required=True)
@@ -234,15 +387,17 @@ def main(argv: list[str] | None = None) -> int:
     p_search = sub.add_parser("search", help="top-3 for one query from all three indexes")
     p_search.add_argument("query")
     p_search.add_argument("--chapter", help="chapter_id filter, applied only to strategy C")
-    sub.add_parser("eval", help="implemented in GĐ5")
+    p_eval = sub.add_parser("eval", help="run the benchmark split on A, B, C and save traces/metrics")
+    p_eval.add_argument("--split", choices=["dev", "test"], required=True)
+    p_eval.add_argument("--allow-rerun", action="store_true", help="allow re-running test (must be reported)")
+    sub.add_parser("select", help="choose the strategy from dev results with the pre-registered rule")
+    p_audit = sub.add_parser("audit", help="create manual audit sheets (or --summary to aggregate labels)")
+    p_audit.add_argument("--summary", action="store_true")
+    p_audit.add_argument("--overwrite", action="store_true")
     args = parser.parse_args(argv)
-    if args.stage == "chunk":
-        return cmd_chunk(args)
-    if args.stage == "ingest":
-        return cmd_ingest(args)
-    if args.stage == "search":
-        return cmd_search(args)
-    raise NotImplementedError(f"Stage '{args.stage}' chưa được hiện thực (GĐ5).")
+    handlers = {"chunk": cmd_chunk, "ingest": cmd_ingest, "search": cmd_search, "eval": cmd_eval,
+                "select": cmd_select, "audit": cmd_audit}
+    return handlers[args.stage](args)
 
 
 if __name__ == "__main__":

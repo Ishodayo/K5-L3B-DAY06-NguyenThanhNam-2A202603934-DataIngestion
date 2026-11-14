@@ -1,0 +1,52 @@
+{
+  "selected_strategy": "C",
+  "decided_at": "2026-11-14T04:53:48+00:00",
+  "based_on": "dev only (benchmark/README.md, 'Tiêu chí chọn chiến lược')",
+  "steps": [
+    "1) Hit@3 dev: {A: 12/16, B: 13/16, C: 13/16}; max=13; ứng viên (chênh <= 1 câu): ['A', 'B', 'C']",
+    "2) Hit@1 dev trong ứng viên: {A: 9, B: 11, C: 12}; còn lại: ['C']",
+    "3) Hòa thì ưu tiên ít chunk / không filter: thứ tự ['C'] -> C",
+    "4) B vs C: C non-filter Hit@3 10/13 vs B 10/13; C tuân thủ filter 3/3 -> chọn C"
+  ],
+  "dev_summary": {
+    "A": {
+      "strategy": "A",
+      "split": "dev",
+      "N": 16,
+      "hit1": 9,
+      "hit3": 12,
+      "page_hit3": 14,
+      "filter_N": 3,
+      "filter_compliant": 0,
+      "nonfilter_N": 13,
+      "nonfilter_hit3": 9
+    },
+    "B": {
+      "strategy": "B",
+      "split": "dev",
+      "N": 16,
+      "hit1": 11,
+      "hit3": 13,
+      "page_hit3": 14,
+      "filter_N": 3,
+      "filter_compliant": 0,
+      "nonfilter_N": 13,
+      "nonfilter_hit3": 10
+    },
+    "C": {
+      "strategy": "C",
+      "split": "dev",
+      "N": 16,
+      "hit1": 12,
+      "hit3": 13,
+      "page_hit3": 14,
+      "filter_N": 3,
+      "filter_compliant": 3,
+      "nonfilter_N": 13,
+      "nonfilter_hit3": 10
+    }
+  },
+  "test_runs": [
+    "2026-11-14T04:54:21+00:00"
+  ]
+}

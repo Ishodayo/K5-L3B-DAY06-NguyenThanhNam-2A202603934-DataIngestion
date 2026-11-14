@@ -1,0 +1,556 @@
+﻿strategy,question_id,question,expected_answer,evidence_quote,applied_filter,auto_evidence_hit_at_3,top1,top2,top3,score,reason
+A,t01,What does the built-in function divmod return?,A tuple of two values: the quotient and the remainder.,"The built-in function divmod takes two arguments and returns a tuple of two values, the quotient and remainder.",,True,"[p139 ch12 0.6556] me as returning multiple values. For example, if you want to divide two integers and compute the quotient and remainder, it is inefficient to compute x//y and then x%y. It is better to compute them both at the same time. The built-in function divmod takes two arguments and returns a tuple of two values, the quotient and remainder. You can store the result as a tuple: >>> t = divmod(7, 3) >>> t (2, 1) Or use tuple assignment to store the elements separately: >>> quot, rem = divmod(7, 3) >>> quot","[p139 ch12 0.6363] separately: >>> quot, rem = divmod(7, 3) >>> quot 2 >>> rem 1 Here is an example of a function that returns a tuple: def min_max(t): return min(t), max(t) max and min are built-in functions that find the largest and smallest elements of a sequence. min_max computes both and returns a tuple of two values.","[p180 ch16 0.6246] at converts an integer to a Time (recall that divmod divides the first argument by the second and returns the quotient and remainder as a tuple). def int_to_time(seconds): time = Time() minutes, time.second = divmod(seconds, 60) time.hour, time.minute = divmod(minutes, 60) return time You might have to think a bit, and run some tests, to convince yourself that these functions are correct. One way to test them is to check that time_to_int(int_to_time(x)) == x for many values of x. This is an exam",2,"top1 p139 có nguyên câu divmod trả tuple (thương, dư) kèm ví dụ"
+A,t02,What do you call a function that builds and returns a new object without changing any of the objects it was given?,A pure function.,This is called a pure function because it does not modify any of the objects passed to it as arguments,,True,"[p210 ch19 0.7055] ues. A function used to create objects is sometimes called a factory. The built-in functions that create lists, sets, and other types can be used as factories: >>> from collections import defaultdict >>> d = defaultdict(list) Notice that the argument is list, which is a class object, not list(), which is a new list. The function you provide doesn’t get called unless you access a key that doesn’t exist. >>> t = d['new key'] >>> t [] The new list, which we’re calling t, is also added to the dictio","[p178 ch16 0.6558] e prototype of add_time: def add_time(t1, t2): sum = Time() sum.hour = t1.hour + t2.hour sum.minute = t1.minute + t2.minute sum.second = t1.second + t2.second return sum The function creates a new Time object, initializes its attributes, and returns a reference to the new object. This is called a pure function because it does not modify any of the objects passed to it as arguments and it has no effect, like displaying a value or getting user input, other than returning a value. To test this func","[p180 ch16 0.6521] In general, I recommend that you write pure functions whenever it is reasonable and resort to modifiers only if there is a compelling advantage. This approach might be called a functional programming style. As an exercise, write a “pure” version of increment that creates and returns a new Time object rather than modifying the parameter. 16.4 Prototyping versus planning The development plan I am demonstrating is called “prototype and patch”. For each function, I wrote a prototype that performed t",2,top2 p178 có câu 'This is called a pure function because...'
+A,t03,"When an integer is the left operand and a Time object is on the right of +, which special method makes the addition work?","__radd__ (""right-side add""), invoked when the Time object appears on the right side of the + operator.","the special method __radd__, which stands for “right-side add”. This method is invoked when a Time object appears on the right side of the + operator.",,True,"[p189 ch17 0.8121] doesn’t know how. But there is a clever solution for this problem: the special method __radd__, which stands for “right-side add”. This method is invoked when a Time object appears on the right side of the + operator. Here’s the definition: # inside class Time: def __radd__(self, other): return self.__add__(other) And here’s how it’s used: >>> print(1337 + start) 10:07:17 As an exercise, write an add method for Points that works with either a Point object or a tuple: • If the second operand is a","[p189 ch17 0.7803] >>> start = Time(9, 45) >>> duration = Time(1, 35) >>> print(start + duration) 11:20:00 >>> print(start + 1337) 10:07:17 Unfortunately, this implementation of addition is not commutative. If the integer is the first operand, you get >>> print(1337 + start) TypeError: unsupported operand type(s) for +: 'int' and 'instance' The problem is, instead of asking the Time object to add an integer, Python is asking an integer to add a Time object, and it doesn’t know how. But there is a clever solution f","[p187 ch17 0.7593] ds, you can specify the behavior of operators on programmer-defined types. For example, if you define a method named __add__ for the Time class, you can use the + operator on Time objects. Here is what the definition might look like:",2,top1 p189 có định nghĩa __radd__ 'right-side add' và cách dùng
+A,t04,"In the Inheritance chapter, what are class attributes?",Variables defined inside a class but outside of any method; they are associated with the class object rather than with an instance.,"which are defined inside a class but outside of any method, are called class attributes because they are associated with the class object",,True,[p202 ch18 0.661] ibutes of a new class called Markov. Solution: https://thinkpython.com/code/ markov2.py. 18.11 Glossary encode: To represent one set of values using another set of values by constructing a mapping between them. class attribute: An attribute associated with a class object. Class attributes are defined inside a class definition but outside any method. instance attribute: An attribute associated with an instance of a class. veneer: A method or function that provides a different interface to another,"[p194 ch18 0.6601] names[self.rank], Card.suit_names[self.suit]) Variables like suit_names and rank_names, which are defined inside a class but outside of any method, are called class attributes because they are associated with the class object Card. This term distinguishes them from variables like suit and rank, which are called instance attributes because they are associated with a particular instance. Both kinds of attribute are accessed using dot notation. For example, in __str__, self is a Card object, and se","[p193 ch18 0.6567] Chapter 18 Inheritance The language feature most often associated with object-oriented programming is inheritance. Inheritance is the ability to define a new class that is a modified version of an existing class. In this chapter I demonstrate inheritance using classes that represent playing cards, decks of cards, and poker hands. If you don’t play poker, you can read about it at http://en.wikipedia.org/wiki/Poker, but you don’t have to; I’ll tell you what you need to know for the exercises. Code",2,top1 p202 glossary + top2 p194 định nghĩa class attribute
+A,t05,"In the Analysis of Algorithms appendix, what limitation does the hashtable implementation have regarding keys?",It only works with hashable keys; mutable types like lists and dictionaries are unhashable.,A limitation of this implementation is that it only works with hashable keys. Mutable types like lists and dictionaries are unhashable.,,False,"[p228 appendix_B 0.6864] B.4 Hashtables To explain how hashtables work and why their performance is so good, I start with a simple implementation of a map and gradually improve it until it’s a hashtable. I use Python to demonstrate these implementations, but in real life you wouldn’t write code like this in Python; you would just use a dictionary! So for the rest of this chapter, you have to imagine that dictionaries don’t exist and you want to implement a data structure that maps from keys to values. The operations you","[p134 ch11 0.6863] ous use of the word “value”. implementation: A way of performing a computation. hashtable: The algorithm used to implement Python dictionaries. hash function: A function used by a hashtable to compute the location for a key. hashable: A type that has a hash function. Immutable types like integers, floats and strings are hashable; mutable types like lists and dictionaries are not. lookup: A dictionary operation that takes a key and finds the corresponding value. reverse lookup: A dictionary opera","[p223 appendix_B 0.6854] Appendix B Analysis of Algorithms This appendix is an edited excerpt from Think Complexity, by Allen B. Downey, also published by O’Reilly Media (2012). When you are done with this book, you might want to move on to that one. Analysis of algorithms is a branch of computer science that studies the performance of algorithms, especially their run time and space requirements. See http://en.wikipedia. org/wiki/Analysis_of_algorithms. The practical goal of algorithm analysis is to predict the performa",1,chỉ có glossary ch11 p134 (ngoài phạm vi appendix_B) nói kiểu mutable không hashable; không có câu giới hạn của HashMap
+A,t06,How does a generator expression differ from a list comprehension in when it produces its values?,It does not compute all values at once; it waits to be asked (lazy evaluation via next or a for loop).,"unlike a list comprehension, it does not compute the values all at once; it waits to be asked.",,True,"[p207 ch19 0.7793] op. I suggest that you use them only if the computation is simple enough that you are likely to get it right the first time. And for beginners that means never. 19.3 Generator expressions Generator expressions are similar to list comprehensions, but with parentheses instead of square brackets: >>> g = (x**2 for x in range(5)) >>> g <generator object <genexpr> at 0x7f4c45a786c0> The result is a generator object that knows how to iterate through a sequence of values. But unlike a list comprehensio","[p213 ch19 0.7614] e brackets that yields a new list. generator expression: An expression with a for loop in parentheses that yields a generator object. multiset: A mathematical entity that represents a mapping between the elements of a set and the number of times they appear. factory: A function, usually passed as a parameter, used to create objects.","[p207 ch19 0.76] sequence of values. But unlike a list comprehension, it does not compute the values all at once; it waits to be asked. The built-in function next gets the next value from the generator: >>> next(g) 0 >>> next(g) 1 When you get to the end of the sequence, next raises a StopIteration exception. You can also use a for loop to iterate through the values: >>> for val in g: ... print(val) 4 9 16 The generator object keeps track of where it is in the sequence, so the for loop picks up where next left o",2,top3 p207 có 'does not compute the values all at once; it waits to be asked'
+B,t01,What does the built-in function divmod return?,A tuple of two values: the quotient and the remainder.,"The built-in function divmod takes two arguments and returns a tuple of two values, the quotient and remainder.",,True,"[p139 ch12 0.6393] 12.3 Tuples as return values
+Strictly speaking, a function can only return one value, but if the value is a tuple, the effect
+is the same as returning multiple values. For example, if you want to divide two integers
+and compute the quotient and remainder, it is inefficient to compute x//y and then x%y. It
+is better to compute them both at the same time.
+The built-in function divmod takes two arguments and returns a tuple of two values, the
+quotient and remainder. You can store the result as a tuple:
+>>> t = divmod(7, 3)
+>>> t
+(2, 1)
+Or use tuple assignment to store the elements separately:
+>>> quot, rem = divmod(7, 3)
+>>> quot
+2
+>>> rem
+1
+Here is an example of a function that returns a tuple:
+def min_max(t):
+return min(t), max(t)
+max and min are built-in functions that find the largest and smallest elements of a sequence.
+min_max computes both and returns a tuple of two values.","[p179 ch16 0.5513] 16.3 Modifiers
+Sometimes it is useful for a function to modify the objects it gets as parameters. In that case,
+the changes are visible to the caller. Functions that work this way are called modifiers.
+increment, which adds a given number of seconds to a Time object, can be written naturally
+as a modifier. Here is a rough draft:
+def increment(time, seconds):
+time.second += seconds
+if time.second >= 60:
+time.second -= 60
+time.minute += 1
+if time.minute >= 60:
+time.minute -= 60
+time.hour += 1
+The first line performs the basic operation; the remainder deals with the special cases we
+saw before.
+Is this function correct? What happens if seconds is much greater than sixty?
+In that case, it is not enough to carry once; we have to keep doing it until time.second is
+less than sixty. One solution is to replace the if statements with while statements. That
+would make the function correct, but not very efficient. As an exercise, write a correct
+version of increment that doesn’t contain any loops.","[p76 ch06 0.5484] 6.4 Boolean functions
+Functions can return booleans, which is often convenient for hiding complicated tests inside functions. For example:
+def is_divisible(x, y):
+if x % y == 0:
+return True
+else:
+return False",2,"top1 p139 có nguyên câu divmod trả tuple (thương, dư)"
+B,t02,What do you call a function that builds and returns a new object without changing any of the objects it was given?,A pure function.,This is called a pure function because it does not modify any of the objects passed to it as arguments,,False,"[p120 ch10 0.6546] The return value from append is None.
+Here’s an example using the + operator:
+>>> t3 = t1 + [4]
+>>> t1
+[1, 2, 3]
+>>> t3
+[1, 2, 3, 4]
+The result of the operator is a new list, and the original list is unchanged.
+This difference is important when you write functions that are supposed to modify lists.
+For example, this function does not delete the head of a list:
+def bad_delete_head(t):
+t = t[1:] # WRONG!
+The slice operator creates a new list and the assignment makes t refer to it, but that doesn’t
+affect the caller.
+>>> t4 = [1, 2, 3]
+>>> bad_delete_head(t4)
+>>> t4
+[1, 2, 3]
+At the beginning of bad_delete_head, t and t4 refer to the same list. At the end, t refers
+to a new list, but t4 still refers to the original, unmodified list.
+An alternative is to write a function that creates and returns a new list. For example, tail
+returns all but the first element of a list:
+def tail(t):
+return t[1:]
+This function leaves the original list unmodified. Here’s how it is used:
+>>> letters = ['a', 'b', 'c']
+>>> rest = tail(letters)
+>>> rest
+['b', 'c']","[p221 appendix_A 0.644] A.3.3 I’ve got a function that doesn’t return what I expect.
+If you have a return statement with a complex expression, you don’t have a chance to
+print the result before returning. Again, you can use a temporary variable. For example,
+instead of:
+return self.hands[i].removeMatches()","[p47 ch03 0.6351] 3.13 Glossary
+function: A named sequence of statements that performs some useful operation. Functions may or may not take arguments and may or may not produce a result.
+function definition: A statement that creates a new function, specifying its name, parameters, and the statements it contains.
+function object: A value created by a function definition. The name of the function is a
+variable that refers to a function object.
+header: The first line of a function definition.",0,"top-3 (p120, p221, p47) không nhắc pure function"
+B,t03,"When an integer is the left operand and a Time object is on the right of +, which special method makes the addition work?","__radd__ (""right-side add""), invoked when the Time object appears on the right side of the + operator.","the special method __radd__, which stands for “right-side add”. This method is invoked when a Time object appears on the right side of the + operator.",,True,"[p189 ch17 0.81] >>> start = Time(9, 45)
+>>> duration = Time(1, 35)
+>>> print(start + duration)
+11:20:00
+>>> print(start + 1337)
+10:07:17
+Unfortunately, this implementation of addition is not commutative. If the integer is the
+first operand, you get
+>>> print(1337 + start)
+TypeError: unsupported operand type(s) for +: 'int' and 'instance'
+The problem is, instead of asking the Time object to add an integer, Python is asking an
+integer to add a Time object, and it doesn’t know how. But there is a clever solution for this
+problem: the special method __radd__, which stands for “right-side add”. This method
+is invoked when a Time object appears on the right side of the + operator. Here’s the
+definition:
+# inside class Time:
+def __radd__(self, other):
+return self.__add__(other)
+And here’s how it’s used:
+>>> print(1337 + start)
+10:07:17
+As an exercise, write an add method for Points that works with either a Point object or a
+tuple:
+• If the second operand is a Point, the method should return a new Point whose x
+coordinate is the sum of the x coordinates of the operands, and likewise for the y
+coordinates.","[p188 ch17 0.7607] # inside class Time:
+def __add__(self, other):
+seconds = self.time_to_int() + other.time_to_int()
+return int_to_time(seconds)
+And here is how you could use it:
+>>> start = Time(9, 45)
+>>> duration = Time(1, 35)
+>>> print(start + duration)
+11:20:00
+When you apply the + operator to Time objects, Python invokes __add__. When you print
+the result, Python invokes __str__. So there is a lot happening behind the scenes!
+Changing the behavior of an operator so that it works with programmer-defined types is
+called operator overloading. For every operator in Python there is a corresponding special method, like __add__. For more details, see http://docs.python.org/3/reference/
+datamodel.html#specialnames.
+As an exercise, write an add method for the Point class.","[p187 ch17 0.7225] 17.7 Operator overloading
+By defining other special methods, you can specify the behavior of operators on
+programmer-defined types. For example, if you define a method named __add__ for the
+Time class, you can use the + operator on Time objects.
+Here is what the definition might look like:",2,top1 p189 có lỗi TypeError và giải pháp __radd__
+B,t04,"In the Inheritance chapter, what are class attributes?",Variables defined inside a class but outside of any method; they are associated with the class object rather than with an instance.,"which are defined inside a class but outside of any method, are called class attributes because they are associated with the class object",,True,"[p202 ch18 0.7283] 18.11 Glossary
+encode: To represent one set of values using another set of values by constructing a mapping between them.
+class attribute: An attribute associated with a class object. Class attributes are defined
+inside a class definition but outside any method.
+instance attribute: An attribute associated with an instance of a class.
+veneer: A method or function that provides a different interface to another function without doing much computation.
+inheritance: The ability to define a new class that is a modified version of a previously
+defined class.
+parent class: The class from which a child class inherits.
+child class: A new class created by inheriting from an existing class; also called a “subclass”.
+IS-A relationship: A relationship between a child class and its parent class.
+HAS-A relationship: A relationship between two classes where instances of one class contain references to instances of the other.
+dependency: A relationship between two classes where instances of one class use instances of the other class, but do not store them as attributes.","[p194 ch18 0.6884] 18.2 Class attributes
+In order to print Card objects in a way that people can easily read, we need a mapping
+from the integer codes to the corresponding ranks and suits. A natural way to do that is
+with lists of strings. We assign these lists to class attributes:
+# inside class Card:
+suit_names = ['Clubs', 'Diamonds', 'Hearts', 'Spades']
+rank_names = [None, 'Ace', '2', '3', '4', '5', '6', '7',
+'8', '9', '10', 'Jack', 'Queen', 'King']
+def __str__(self):
+return '%s of %s' % (Card.rank_names[self.rank],
+Card.suit_names[self.suit])
+Variables like suit_names and rank_names, which are defined inside a class but outside
+of any method, are called class attributes because they are associated with the class object
+Card.
+This term distinguishes them from variables like suit and rank, which are called instance
+attributes because they are associated with a particular instance.
+Both kinds of attribute are accessed using dot notation. For example, in __str__, self
+is a Card object, and self.rank is its rank. Similarly, Card is a class object, and
+Card.rank_names is a list of strings associated with the class.","[p193 ch18 0.6557] Chapter 18
+Inheritance
+The language feature most often associated with object-oriented programming is inheritance. Inheritance is the ability to define a new class that is a modified version of an existing class. In this chapter I demonstrate inheritance using classes that represent playing
+cards, decks of cards, and poker hands.
+If you don’t play poker, you can read about it at http://en.wikipedia.org/wiki/Poker,
+but you don’t have to; I’ll tell you what you need to know for the exercises.
+Code examples from this chapter are available from https://thinkpython.com/code/
+Card.py.",2,top1 p202 glossary + top2 p194 định nghĩa class attribute
+B,t05,"In the Analysis of Algorithms appendix, what limitation does the hashtable implementation have regarding keys?",It only works with hashable keys; mutable types like lists and dictionaries are unhashable.,A limitation of this implementation is that it only works with hashable keys. Mutable types like lists and dictionaries are unhashable.,,False,"[p228 appendix_B 0.6918] B.4 Hashtables
+To explain how hashtables work and why their performance is so good, I start with a simple
+implementation of a map and gradually improve it until it’s a hashtable.
+I use Python to demonstrate these implementations, but in real life you wouldn’t write
+code like this in Python; you would just use a dictionary! So for the rest of this chapter, you
+have to imagine that dictionaries don’t exist and you want to implement a data structure
+that maps from keys to values. The operations you have to implement are:
+add(k, v): Add a new item that maps from key k to value v. With a Python dictionary, d,
+this operation is written d[k] = v.
+get(k): Look up and return the value that corresponds to key k. With a Python dictionary,
+d, this operation is written d[k] or d.get(k).
+For now, I assume that each key only appears once. The simplest implementation of this
+interface uses a list of tuples, where each tuple is a key-value pair.
+class LinearMap:
+def __init__(self):
+self.items = []
+def add(self, k, v):
+self.items.append((k, v))
+def get(self, k):
+for key, val in self.items:
+if key == k:","[p223 appendix_B 0.6753] Appendix B
+Analysis of Algorithms
+This appendix is an edited excerpt from Think Complexity, by Allen B. Downey,
+also published by O’Reilly Media (2012). When you are done with this book,
+you might want to move on to that one.
+Analysis of algorithms is a branch of computer science that studies the performance of
+algorithms, especially their run time and space requirements. See http://en.wikipedia.
+org/wiki/Analysis_of_algorithms.
+The practical goal of algorithm analysis is to predict the performance of different algorithms in order to guide design decisions.
+During the 2008 United States Presidential Campaign, candidate Barack Obama was asked
+to perform an impromptu analysis when he visited Google. Chief executive Eric Schmidt
+jokingly asked him for “the most efficient way to sort a million 32-bit integers.” Obama
+had apparently been tipped off, because he quickly replied, “I think the bubble sort would
+be the wrong way to go.” See http://www.youtube.com/watch?v=k4RRi_ntQc8.
+This is true: bubble sort is conceptually simple but slow for large datasets. The answer Schmidt was probably looking for is “radix sort” (http://en.wikipedia.org/wiki/
+Radix_sort)1.","[p134 ch11 0.6713] 11.9 Glossary
+mapping: A relationship in which each element of one set corresponds to an element of
+another set.
+dictionary: A mapping from keys to their corresponding values.
+key-value pair: The representation of the mapping from a key to a value.
+item: In a dictionary, another name for a key-value pair.
+key: An object that appears in a dictionary as the first part of a key-value pair.
+value: An object that appears in a dictionary as the second part of a key-value pair. This is
+more specific than our previous use of the word “value”.
+implementation: A way of performing a computation.
+hashtable: The algorithm used to implement Python dictionaries.
+hash function: A function used by a hashtable to compute the location for a key.
+hashable: A type that has a hash function. Immutable types like integers, floats and strings
+are hashable; mutable types like lists and dictionaries are not.
+lookup: A dictionary operation that takes a key and finds the corresponding value.
+reverse lookup: A dictionary operation that takes a value and finds one or more keys that
+map to it.
+raise statement: A statement that (deliberately) raises an exception.",1,top3 p134 glossary ch11 (ngoài phạm vi appendix_B) nói mutable không hashable; thiếu câu giới hạn của HashMap
+B,t06,How does a generator expression differ from a list comprehension in when it produces its values?,It does not compute all values at once; it waits to be asked (lazy evaluation via next or a for loop).,"unlike a list comprehension, it does not compute the values all at once; it waits to be asked.",,True,"[p207 ch19 0.8204] 19.3 Generator expressions
+Generator expressions are similar to list comprehensions, but with parentheses instead of
+square brackets:
+>>> g = (x**2 for x in range(5))
+>>> g
+<generator object <genexpr> at 0x7f4c45a786c0>
+The result is a generator object that knows how to iterate through a sequence of values. But
+unlike a list comprehension, it does not compute the values all at once; it waits to be asked.
+The built-in function next gets the next value from the generator:
+>>> next(g)
+0
+>>> next(g)
+1
+When you get to the end of the sequence, next raises a StopIteration exception. You can
+also use a for loop to iterate through the values:
+>>> for val in g:
+... print(val)
+4
+9
+16
+The generator object keeps track of where it is in the sequence, so the for loop picks up
+where next left off. Once the generator is exhausted, it continues to raise StopIteration:
+>>> next(g)
+StopIteration
+Generator expressions are often used with functions like sum, max, and min:
+>>> sum(x**2 for x in range(5))
+30
+19.4 any and all
+Python provides a built-in function, any, that takes a sequence of boolean values and returns True if any of the values are True. It works on lists:","[p213 ch19 0.7681] 19.10 Glossary
+conditional expression: An expression that has one of two values, depending on a condition.
+list comprehension: An expression with a for loop in square brackets that yields a new
+list.
+generator expression: An expression with a for loop in parentheses that yields a generator object.
+multiset: A mathematical entity that represents a mapping between the elements of a set
+and the number of times they appear.
+factory: A function, usually passed as a parameter, used to create objects.","[p206 ch19 0.7125] 19.2 List comprehensions
+In Section 10.7 we saw the map and filter patterns. For example, this function takes a list
+of strings, maps the string method capitalize to the elements, and returns a new list of
+strings:
+def capitalize_all(t):
+res = []
+for s in t:
+res.append(s.capitalize())
+return res
+We can write this more concisely using a list comprehension:
+def capitalize_all(t):
+return [s.capitalize() for s in t]
+The bracket operators indicate that we are constructing a new list. The expression inside
+the brackets specifies the elements of the list, and the for clause indicates what sequence
+we are traversing.
+The syntax of a list comprehension is a little awkward because the loop variable, s in this
+example, appears in the expression before we get to the definition.
+List comprehensions can also be used for filtering. For example, this function selects only
+the elements of t that are upper case, and returns a new list:
+def only_upper(t):
+res = []
+for s in t:
+if s.isupper():
+res.append(s)
+return res",2,top1 p207 có trọn ý generator không tính hết giá trị một lúc
+C,t01,What does the built-in function divmod return?,A tuple of two values: the quotient and the remainder.,"The built-in function divmod takes two arguments and returns a tuple of two values, the quotient and remainder.",,True,"[p139 ch12 0.6393] 12.3 Tuples as return values
+Strictly speaking, a function can only return one value, but if the value is a tuple, the effect
+is the same as returning multiple values. For example, if you want to divide two integers
+and compute the quotient and remainder, it is inefficient to compute x//y and then x%y. It
+is better to compute them both at the same time.
+The built-in function divmod takes two arguments and returns a tuple of two values, the
+quotient and remainder. You can store the result as a tuple:
+>>> t = divmod(7, 3)
+>>> t
+(2, 1)
+Or use tuple assignment to store the elements separately:
+>>> quot, rem = divmod(7, 3)
+>>> quot
+2
+>>> rem
+1
+Here is an example of a function that returns a tuple:
+def min_max(t):
+return min(t), max(t)
+max and min are built-in functions that find the largest and smallest elements of a sequence.
+min_max computes both and returns a tuple of two values.","[p179 ch16 0.5513] 16.3 Modifiers
+Sometimes it is useful for a function to modify the objects it gets as parameters. In that case,
+the changes are visible to the caller. Functions that work this way are called modifiers.
+increment, which adds a given number of seconds to a Time object, can be written naturally
+as a modifier. Here is a rough draft:
+def increment(time, seconds):
+time.second += seconds
+if time.second >= 60:
+time.second -= 60
+time.minute += 1
+if time.minute >= 60:
+time.minute -= 60
+time.hour += 1
+The first line performs the basic operation; the remainder deals with the special cases we
+saw before.
+Is this function correct? What happens if seconds is much greater than sixty?
+In that case, it is not enough to carry once; we have to keep doing it until time.second is
+less than sixty. One solution is to replace the if statements with while statements. That
+would make the function correct, but not very efficient. As an exercise, write a correct
+version of increment that doesn’t contain any loops.","[p76 ch06 0.5484] 6.4 Boolean functions
+Functions can return booleans, which is often convenient for hiding complicated tests inside functions. For example:
+def is_divisible(x, y):
+if x % y == 0:
+return True
+else:
+return False",2,giống B: top1 p139 đủ bằng chứng
+C,t02,What do you call a function that builds and returns a new object without changing any of the objects it was given?,A pure function.,This is called a pure function because it does not modify any of the objects passed to it as arguments,,False,"[p120 ch10 0.6546] The return value from append is None.
+Here’s an example using the + operator:
+>>> t3 = t1 + [4]
+>>> t1
+[1, 2, 3]
+>>> t3
+[1, 2, 3, 4]
+The result of the operator is a new list, and the original list is unchanged.
+This difference is important when you write functions that are supposed to modify lists.
+For example, this function does not delete the head of a list:
+def bad_delete_head(t):
+t = t[1:] # WRONG!
+The slice operator creates a new list and the assignment makes t refer to it, but that doesn’t
+affect the caller.
+>>> t4 = [1, 2, 3]
+>>> bad_delete_head(t4)
+>>> t4
+[1, 2, 3]
+At the beginning of bad_delete_head, t and t4 refer to the same list. At the end, t refers
+to a new list, but t4 still refers to the original, unmodified list.
+An alternative is to write a function that creates and returns a new list. For example, tail
+returns all but the first element of a list:
+def tail(t):
+return t[1:]
+This function leaves the original list unmodified. Here’s how it is used:
+>>> letters = ['a', 'b', 'c']
+>>> rest = tail(letters)
+>>> rest
+['b', 'c']","[p221 appendix_A 0.644] A.3.3 I’ve got a function that doesn’t return what I expect.
+If you have a return statement with a complex expression, you don’t have a chance to
+print the result before returning. Again, you can use a temporary variable. For example,
+instead of:
+return self.hands[i].removeMatches()","[p47 ch03 0.6351] 3.13 Glossary
+function: A named sequence of statements that performs some useful operation. Functions may or may not take arguments and may or may not produce a result.
+function definition: A statement that creates a new function, specifying its name, parameters, and the statements it contains.
+function object: A value created by a function definition. The name of the function is a
+variable that refers to a function object.
+header: The first line of a function definition.",0,giống B: không chunk nào nhắc pure function
+C,t03,"When an integer is the left operand and a Time object is on the right of +, which special method makes the addition work?","__radd__ (""right-side add""), invoked when the Time object appears on the right side of the + operator.","the special method __radd__, which stands for “right-side add”. This method is invoked when a Time object appears on the right side of the + operator.",,True,"[p189 ch17 0.81] >>> start = Time(9, 45)
+>>> duration = Time(1, 35)
+>>> print(start + duration)
+11:20:00
+>>> print(start + 1337)
+10:07:17
+Unfortunately, this implementation of addition is not commutative. If the integer is the
+first operand, you get
+>>> print(1337 + start)
+TypeError: unsupported operand type(s) for +: 'int' and 'instance'
+The problem is, instead of asking the Time object to add an integer, Python is asking an
+integer to add a Time object, and it doesn’t know how. But there is a clever solution for this
+problem: the special method __radd__, which stands for “right-side add”. This method
+is invoked when a Time object appears on the right side of the + operator. Here’s the
+definition:
+# inside class Time:
+def __radd__(self, other):
+return self.__add__(other)
+And here’s how it’s used:
+>>> print(1337 + start)
+10:07:17
+As an exercise, write an add method for Points that works with either a Point object or a
+tuple:
+• If the second operand is a Point, the method should return a new Point whose x
+coordinate is the sum of the x coordinates of the operands, and likewise for the y
+coordinates.","[p188 ch17 0.7607] # inside class Time:
+def __add__(self, other):
+seconds = self.time_to_int() + other.time_to_int()
+return int_to_time(seconds)
+And here is how you could use it:
+>>> start = Time(9, 45)
+>>> duration = Time(1, 35)
+>>> print(start + duration)
+11:20:00
+When you apply the + operator to Time objects, Python invokes __add__. When you print
+the result, Python invokes __str__. So there is a lot happening behind the scenes!
+Changing the behavior of an operator so that it works with programmer-defined types is
+called operator overloading. For every operator in Python there is a corresponding special method, like __add__. For more details, see http://docs.python.org/3/reference/
+datamodel.html#specialnames.
+As an exercise, write an add method for the Point class.","[p187 ch17 0.7225] 17.7 Operator overloading
+By defining other special methods, you can specify the behavior of operators on
+programmer-defined types. For example, if you define a method named __add__ for the
+Time class, you can use the + operator on Time objects.
+Here is what the definition might look like:",2,giống B: top1 p189 có __radd__
+C,t04,"In the Inheritance chapter, what are class attributes?",Variables defined inside a class but outside of any method; they are associated with the class object rather than with an instance.,"which are defined inside a class but outside of any method, are called class attributes because they are associated with the class object","{""chapter_id"": ""ch18""}",True,"[p202 ch18 0.7283] 18.11 Glossary
+encode: To represent one set of values using another set of values by constructing a mapping between them.
+class attribute: An attribute associated with a class object. Class attributes are defined
+inside a class definition but outside any method.
+instance attribute: An attribute associated with an instance of a class.
+veneer: A method or function that provides a different interface to another function without doing much computation.
+inheritance: The ability to define a new class that is a modified version of a previously
+defined class.
+parent class: The class from which a child class inherits.
+child class: A new class created by inheriting from an existing class; also called a “subclass”.
+IS-A relationship: A relationship between a child class and its parent class.
+HAS-A relationship: A relationship between two classes where instances of one class contain references to instances of the other.
+dependency: A relationship between two classes where instances of one class use instances of the other class, but do not store them as attributes.","[p194 ch18 0.6884] 18.2 Class attributes
+In order to print Card objects in a way that people can easily read, we need a mapping
+from the integer codes to the corresponding ranks and suits. A natural way to do that is
+with lists of strings. We assign these lists to class attributes:
+# inside class Card:
+suit_names = ['Clubs', 'Diamonds', 'Hearts', 'Spades']
+rank_names = [None, 'Ace', '2', '3', '4', '5', '6', '7',
+'8', '9', '10', 'Jack', 'Queen', 'King']
+def __str__(self):
+return '%s of %s' % (Card.rank_names[self.rank],
+Card.suit_names[self.suit])
+Variables like suit_names and rank_names, which are defined inside a class but outside
+of any method, are called class attributes because they are associated with the class object
+Card.
+This term distinguishes them from variables like suit and rank, which are called instance
+attributes because they are associated with a particular instance.
+Both kinds of attribute are accessed using dot notation. For example, in __str__, self
+is a Card object, and self.rank is its rank. Similarly, Card is a class object, and
+Card.rank_names is a list of strings associated with the class.","[p193 ch18 0.6557] Chapter 18
+Inheritance
+The language feature most often associated with object-oriented programming is inheritance. Inheritance is the ability to define a new class that is a modified version of an existing class. In this chapter I demonstrate inheritance using classes that represent playing
+cards, decks of cards, and poker hands.
+If you don’t play poker, you can read about it at http://en.wikipedia.org/wiki/Poker,
+but you don’t have to; I’ll tell you what you need to know for the exercises.
+Code examples from this chapter are available from https://thinkpython.com/code/
+Card.py.",2,giống B; filter ch18 đúng phạm vi
+C,t05,"In the Analysis of Algorithms appendix, what limitation does the hashtable implementation have regarding keys?",It only works with hashable keys; mutable types like lists and dictionaries are unhashable.,A limitation of this implementation is that it only works with hashable keys. Mutable types like lists and dictionaries are unhashable.,"{""chapter_id"": ""appendix_B""}",False,"[p228 appendix_B 0.6918] B.4 Hashtables
+To explain how hashtables work and why their performance is so good, I start with a simple
+implementation of a map and gradually improve it until it’s a hashtable.
+I use Python to demonstrate these implementations, but in real life you wouldn’t write
+code like this in Python; you would just use a dictionary! So for the rest of this chapter, you
+have to imagine that dictionaries don’t exist and you want to implement a data structure
+that maps from keys to values. The operations you have to implement are:
+add(k, v): Add a new item that maps from key k to value v. With a Python dictionary, d,
+this operation is written d[k] = v.
+get(k): Look up and return the value that corresponds to key k. With a Python dictionary,
+d, this operation is written d[k] or d.get(k).
+For now, I assume that each key only appears once. The simplest implementation of this
+interface uses a list of tuples, where each tuple is a key-value pair.
+class LinearMap:
+def __init__(self):
+self.items = []
+def add(self, k, v):
+self.items.append((k, v))
+def get(self, k):
+for key, val in self.items:
+if key == k:","[p223 appendix_B 0.6753] Appendix B
+Analysis of Algorithms
+This appendix is an edited excerpt from Think Complexity, by Allen B. Downey,
+also published by O’Reilly Media (2012). When you are done with this book,
+you might want to move on to that one.
+Analysis of algorithms is a branch of computer science that studies the performance of
+algorithms, especially their run time and space requirements. See http://en.wikipedia.
+org/wiki/Analysis_of_algorithms.
+The practical goal of algorithm analysis is to predict the performance of different algorithms in order to guide design decisions.
+During the 2008 United States Presidential Campaign, candidate Barack Obama was asked
+to perform an impromptu analysis when he visited Google. Chief executive Eric Schmidt
+jokingly asked him for “the most efficient way to sort a million 32-bit integers.” Obama
+had apparently been tipped off, because he quickly replied, “I think the bubble sort would
+be the wrong way to go.” See http://www.youtube.com/watch?v=k4RRi_ntQc8.
+This is true: bubble sort is conceptually simple but slow for large datasets. The answer Schmidt was probably looking for is “radix sort” (http://en.wikipedia.org/wiki/
+Radix_sort)1.","[p231 appendix_B 0.6468] Figure B.1: The cost of a hashtable add.
+The extra work of rehashing appears as a sequence of increasingly tall towers with increasing space between them. Now if you knock over the towers, spreading the cost of resizing
+over all adds, you can see graphically that the total cost after n adds is 2n − 2.
+An important feature of this algorithm is that when we resize the HashTable it grows
+geometrically; that is, we multiply the size by a constant. If you increase the size
+arithmetically—adding a fixed number each time—the average time per add is linear.
+You can download my implementation of HashMap from https://thinkpython.com/
+code/Map.py, but remember that there is no reason to use it; if you want a map, just use a
+Python dictionary.",0,"filter appendix_B đúng phạm vi nhưng top-3 (p228, p223, p231) không có câu về hashable keys"
+C,t06,How does a generator expression differ from a list comprehension in when it produces its values?,It does not compute all values at once; it waits to be asked (lazy evaluation via next or a for loop).,"unlike a list comprehension, it does not compute the values all at once; it waits to be asked.",,True,"[p207 ch19 0.8204] 19.3 Generator expressions
+Generator expressions are similar to list comprehensions, but with parentheses instead of
+square brackets:
+>>> g = (x**2 for x in range(5))
+>>> g
+<generator object <genexpr> at 0x7f4c45a786c0>
+The result is a generator object that knows how to iterate through a sequence of values. But
+unlike a list comprehension, it does not compute the values all at once; it waits to be asked.
+The built-in function next gets the next value from the generator:
+>>> next(g)
+0
+>>> next(g)
+1
+When you get to the end of the sequence, next raises a StopIteration exception. You can
+also use a for loop to iterate through the values:
+>>> for val in g:
+... print(val)
+4
+9
+16
+The generator object keeps track of where it is in the sequence, so the for loop picks up
+where next left off. Once the generator is exhausted, it continues to raise StopIteration:
+>>> next(g)
+StopIteration
+Generator expressions are often used with functions like sum, max, and min:
+>>> sum(x**2 for x in range(5))
+30
+19.4 any and all
+Python provides a built-in function, any, that takes a sequence of boolean values and returns True if any of the values are True. It works on lists:","[p213 ch19 0.7681] 19.10 Glossary
+conditional expression: An expression that has one of two values, depending on a condition.
+list comprehension: An expression with a for loop in square brackets that yields a new
+list.
+generator expression: An expression with a for loop in parentheses that yields a generator object.
+multiset: A mathematical entity that represents a mapping between the elements of a set
+and the number of times they appear.
+factory: A function, usually passed as a parameter, used to create objects.","[p206 ch19 0.7125] 19.2 List comprehensions
+In Section 10.7 we saw the map and filter patterns. For example, this function takes a list
+of strings, maps the string method capitalize to the elements, and returns a new list of
+strings:
+def capitalize_all(t):
+res = []
+for s in t:
+res.append(s.capitalize())
+return res
+We can write this more concisely using a list comprehension:
+def capitalize_all(t):
+return [s.capitalize() for s in t]
+The bracket operators indicate that we are constructing a new list. The expression inside
+the brackets specifies the elements of the list, and the for clause indicates what sequence
+we are traversing.
+The syntax of a list comprehension is a little awkward because the loop variable, s in this
+example, appears in the expression before we get to the definition.
+List comprehensions can also be used for filtering. For example, this function selects only
+the elements of t that are upper case, and returns a new list:
+def only_upper(t):
+res = []
+for s in t:
+if s.isupper():
+res.append(s)
+return res",2,giống B: top1 p207 đủ bằng chứng
