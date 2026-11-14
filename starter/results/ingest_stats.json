@@ -1,0 +1,149 @@
+{
+  "embedding": {
+    "provider": "local sentence-transformers",
+    "model": "BAAI/bge-base-en-v1.5",
+    "revision": "a5beb1e3e68b9ab74eb54cfd186867f64f240e1a",
+    "dimensions": 768,
+    "max_seq_length": 512,
+    "normalize": true,
+    "query_prefix": "Represent this sentence for searching relevant passages: ",
+    "document_prefix": "",
+    "cost_usd": 0.0
+  },
+  "vector_store": {
+    "backend": "PostgreSQL + pgvector (Docker pgvector/pgvector:0.8.7-pg16)",
+    "postgresql": "16.16 (Debian 16.16-1.pgdg12+1)",
+    "pgvector": "0.8.7",
+    "table": "chunks",
+    "metric": "cosine (<=> operator)",
+    "search": "exact (no ANN index)"
+  },
+  "runs": [
+    {
+      "run_at": "2026-11-14T04:34:58+00:00",
+      "force_reembed": true,
+      "timings": {
+        "load_and_normalize_s": 7.34,
+        "chunk_A_s": 0.046,
+        "chunk_B_s": 0.031,
+        "load_model_s": 27.19,
+        "total_s": 468.52
+      },
+      "strategies": {
+        "A": {
+          "chunks": 929,
+          "embedded_now": 929,
+          "embed_s": 242.22,
+          "upsert_s": 0.65,
+          "inserted": 0,
+          "updated": 0,
+          "unchanged": 929,
+          "deleted": 0,
+          "tokens_max": 252,
+          "chunks_over_max_seq": 0
+        },
+        "B": {
+          "chunks": 528,
+          "embedded_now": 528,
+          "embed_s": 189.89,
+          "upsert_s": 0.53,
+          "inserted": 0,
+          "updated": 0,
+          "unchanged": 528,
+          "deleted": 0,
+          "tokens_max": 394,
+          "chunks_over_max_seq": 0
+        },
+        "C": {
+          "chunks": 528,
+          "embedded_now": 0,
+          "embed_s": 0.0,
+          "upsert_s": 0.04,
+          "inserted": 0,
+          "updated": 0,
+          "unchanged": 528,
+          "deleted": 0,
+          "note": "reuses B vectors"
+        }
+      },
+      "db_counts": {
+        "A": {
+          "rows": 929,
+          "distinct_ids": 929
+        },
+        "B": {
+          "rows": 528,
+          "distinct_ids": 528
+        },
+        "C": {
+          "rows": 528,
+          "distinct_ids": 528
+        }
+      },
+      "cost_usd": 0.0
+    },
+    {
+      "run_at": "2026-11-14T04:44:24+00:00",
+      "force_reembed": false,
+      "timings": {
+        "load_and_normalize_s": 6.94,
+        "chunk_A_s": 0.046,
+        "chunk_B_s": 0.041,
+        "load_model_s": 22.84,
+        "total_s": 32.21
+      },
+      "strategies": {
+        "A": {
+          "chunks": 929,
+          "embedded_now": 0,
+          "embed_s": 0.0,
+          "upsert_s": 0.58,
+          "inserted": 0,
+          "updated": 0,
+          "unchanged": 929,
+          "deleted": 0,
+          "tokens_max": 252,
+          "chunks_over_max_seq": 0
+        },
+        "B": {
+          "chunks": 528,
+          "embedded_now": 0,
+          "embed_s": 0.0,
+          "upsert_s": 0.45,
+          "inserted": 0,
+          "updated": 0,
+          "unchanged": 528,
+          "deleted": 0,
+          "tokens_max": 394,
+          "chunks_over_max_seq": 0
+        },
+        "C": {
+          "chunks": 528,
+          "embedded_now": 0,
+          "embed_s": 0.0,
+          "upsert_s": 0.04,
+          "inserted": 0,
+          "updated": 0,
+          "unchanged": 528,
+          "deleted": 0,
+          "note": "reuses B vectors"
+        }
+      },
+      "db_counts": {
+        "A": {
+          "rows": 929,
+          "distinct_ids": 929
+        },
+        "B": {
+          "rows": 528,
+          "distinct_ids": 528
+        },
+        "C": {
+          "rows": 528,
+          "distinct_ids": 528
+        }
+      },
+      "cost_usd": 0.0
+    }
+  ]
+}
