@@ -1,11 +1,11 @@
 {
-  "run_at": "2026-11-14T04:14:27+00:00",
+  "run_at": "2026-11-14T06:25:55+00:00",
   "pypdf": "7.1.0",
   "pages_loaded": 203,
   "timings": {
-    "load_and_normalize_s": 6.95,
-    "chunk_A_s": 0.05,
-    "chunk_B_s": 0.034
+    "load_and_normalize_s": 9.14,
+    "chunk_A_s": 0.057,
+    "chunk_B_s": 0.04
   },
   "strategies": {
     "A": {

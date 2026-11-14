@@ -37,7 +37,7 @@ from .store import PgVectorStore
 
 STARTER = Path(__file__).resolve().parents[1]
 REPO = STARTER.parent
-RESULTS = STARTER / "results"
+RESULTS = REPO / "results"  # submission layout: results/ at repo root (SUBMISSION.md)
 
 # Single source of truth for the three configurations (same corpus, model, benchmark).
 STRATEGIES = {

@@ -144,6 +144,69 @@
         }
       },
       "cost_usd": 0.0
+    },
+    {
+      "run_at": "2026-11-14T06:25:57+00:00",
+      "force_reembed": false,
+      "timings": {
+        "load_and_normalize_s": 9.58,
+        "chunk_A_s": 0.055,
+        "chunk_B_s": 0.036,
+        "load_model_s": 28.9,
+        "total_s": 42.33
+      },
+      "strategies": {
+        "A": {
+          "chunks": 929,
+          "embedded_now": 0,
+          "embed_s": 0.0,
+          "upsert_s": 0.92,
+          "inserted": 0,
+          "updated": 0,
+          "unchanged": 929,
+          "deleted": 0,
+          "tokens_max": 252,
+          "chunks_over_max_seq": 0
+        },
+        "B": {
+          "chunks": 528,
+          "embedded_now": 0,
+          "embed_s": 0.0,
+          "upsert_s": 0.66,
+          "inserted": 0,
+          "updated": 0,
+          "unchanged": 528,
+          "deleted": 0,
+          "tokens_max": 394,
+          "chunks_over_max_seq": 0
+        },
+        "C": {
+          "chunks": 528,
+          "embedded_now": 0,
+          "embed_s": 0.0,
+          "upsert_s": 0.05,
+          "inserted": 0,
+          "updated": 0,
+          "unchanged": 528,
+          "deleted": 0,
+          "note": "reuses B vectors"
+        }
+      },
+      "db_counts": {
+        "A": {
+          "rows": 929,
+          "distinct_ids": 929
+        },
+        "B": {
+          "rows": 528,
+          "distinct_ids": 528
+        },
+        "C": {
+          "rows": 528,
+          "distinct_ids": 528
+        }
+      },
+      "cost_usd": 0.0
     }
   ]
 }
